@@ -1,0 +1,44 @@
+\ProvidesPackage{mypreamble}
+
+\usefonttheme[onlymath]{serif}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+% Define where theme files are located. ('/styles')
+\usepackage{styles/fluxmacros}
+\usefolder{styles}
+% Use Flux theme v0.1 beta
+% Available style: asphalt, blue, red, green, gray 
+\usetheme[style=asphalt]{flux}
+\usepackage[russian]{babel}
+\hypersetup{unicode=true}
+\usepackage{dsfont}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{textgreek}
+\usepackage{tabularx}
+
+\setbeamertemplate{itemize subitem}{\hbox{\donotcoloroutermaths$-$}}
+\setbeamertemplate{itemize subsubitem}{\hbox{\donotcoloroutermaths$\cdot$}}
+\setbeamertemplate{itemize/enumerate subbody begin}{\normalsize}
+\setbeamertemplate{itemize/enumerate subsubbody begin}{\normalsize}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=blue,
+}
+
+\newcommand {\framedgraphic}[2] {
+    \begin{frame}{#1}
+        \begin{center}
+            \includegraphics[width=\textwidth,height=0.8\textheight,keepaspectratio]{#2}
+        \end{center}
+    \end{frame}
+}
+
+\newcommand{\includegraphicscenter}[2] {
+    \begin{center}
+        \includegraphics[#1]{#2}
+    \end{center}
+}

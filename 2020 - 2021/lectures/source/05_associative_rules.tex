@@ -1,0 +1,98 @@
+\documentclass[9pt]{beamer}
+\usepackage{styles/mypreamble}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\title{Алгоритмы машинного обучения}
+\subtitle{Лекция 5. Ассоциативные правила}
+\author{Владимир Кукушкин}
+\institute{СПбГЭУ - 16.12.2020}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+\begin{document}
+
+\titlepage
+
+\section{Постановка задачи}
+
+\begin{frame}{Что это такое}
+\begin{itemize}
+    \item Пользователи, которые купили X также покупают Y.
+    \item Предшественник рекомендательных систем. 
+    \item Одна из классических прикладных задач. Магазины массово стали вкладываться в решения в 90х.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Формализация задачи}
+\begin{itemize}
+    \item Данные состоят из бинарных колонок $Z_j$. Строка ассоциируется с одной покупкой в супермаркете (чеком), колонки -- с товарами. Всего в магазине $K$ различных товаров.
+    $$z_{ij} = \begin{cases}
+    1, \text{если в $i$-м чеке был куплен $j$-й товар};\\
+    0, \text{иначе}
+    \end{cases}.$$
+    \item Хочется найти такие подмножества товаров $\mathcal{K}\subset \{1, \ldots, K\}$, чтобы вероятность их совместной покупки в одном чеке
+    $$\text{Pr}\left[\underset{k\in \mathcal{K}}{\bigcap} (Z_k = 1)\right] = \text{Pr}\left[\underset{k\in \mathcal{K}}{\prod} Z_k = 1\right]$$
+    была достаточно большой.
+    \item Можно оценить эту вероятность на основе имеющихся данных:
+    $$T(\mathcal{K)} = \widehat{\text{Pr}}\left[\underset{k\in \mathcal{K}}{\prod} Z_k = 1\right] = \frac{1}{N}\sum_{i=1}^N \underset{k\in \mathcal{K}}{\prod} z_{ik}.$$
+    $T(\mathcal{K)}$ называют поддержкой (support, prevalence).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Замечания}
+\begin{itemize}
+    \item Хотим найти все такие множества
+    \begin{equation}\label{ass_rule_main}\{\mathcal{K}_l\;|\;T(\mathcal{K}_l) > t\}\end{equation}
+    для наперёд заданного $t$.
+    \item Брутфорс не сработает. (Почему?)
+    \item Мощность $|\{\mathcal{K}_l\}|$ будет небольшой.
+    \item Если $\mathcal{L} \subseteq \mathcal{K}$, то $T(\mathcal{L}) \geq T(\mathcal{K})$.
+\end{itemize}
+Все эти замечания наводят на мысль о The Apriori Alorithm (1995).
+\end{frame}
+
+\section{The Apriori Algorithm}
+
+\begin{frame}{Описание алгоритма}
+\begin{itemize}
+    \item Сначала проверяем все подмножества товаров из одного элемента. Отсекаем те, для которых не выполнено $\eqref{ass_rule_main}$.
+    \item Добавляем к выжившим подможествам из предыдущего пункта второй элемент. Снова проверяем, кто останется среди них.
+    \item То есть чтобы проверить какое-то подмножество мощности $|\mathcal{K}| = m$, нужно перепробовать все подмножества этого множества из $m-1$ элемента.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Ассоциативные правила}
+\begin{itemize}
+    \item В Apriori algorithm при переходе от $m-1$ к $m$, расширяя подмножество, мы оцениваем, как часто с данными $m-1$ товарами покупают $m$-й.
+    \item Обощение. Если $\mathcal{K} = A\sqcup B$, то говорят, что задано ассоциативное правило $A \Rightarrow B$. $A$ -- условие (antecedent), $B$ -- следствие (consequent).
+    \item Ассоциативные правила характеризуются двумя важными свойствами:
+    \begin{itemize}
+        \item \textbf{Достоверность} (confidence): 
+        $$C(A \Rightarrow B) = \frac{T(A \Rightarrow B)}{T(A)}.$$
+        На самом деле это просто $\text{Pr} (B|A)$.
+        \item \textbf{Усиление} (lift):
+        $$L(A \Rightarrow B) = \frac{C(A \Rightarrow B)}{T(B)}.$$
+        Показывает, во сколько раз добавление $A$ к $B$ увеличивает вероятность покупки $B$. То есть это $\text{Pr}(A\text{ and }B) / \text{Pr}(A)\text{Pr}(B)$.
+    \end{itemize}
+    \item И теперь уже хотим искать правила, максимизирующие $C$ и/или $L$.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Пример}
+\begin{itemize}
+    \item Проверим корзину $\mathcal{K} = \{\text{масло, сыр, хлеб}\}$ и рассмотрим ассоциативное правило $\{\text{масло, сыр} \Rightarrow \text{хлеб}\}$.
+    \item Если саппорт этого правила равен 0.03, то это означает, что эти три товара появляются вместе в корзинах в 3\% чеков.
+    \item Конфиденс в 82\% означает, что если покупаются масло с сыром, то в 82\% случаев будет вдобавок куплен и хлеб.
+    \item Если при этом хлеб встречается в 43\% всех чеков, то тогда усиление покупки хлеба набором $\{\text{масло, сыр}\}$ составляет 1.95. 
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[allowframebreaks]
+    \frametitle{Литература}
+    \bibliographystyle{unsrt}
+    \nocite{esl}
+    \nocite{arules_habr}
+    \bibliography{references.bib}
+\end{frame}
+
+\end{document}
