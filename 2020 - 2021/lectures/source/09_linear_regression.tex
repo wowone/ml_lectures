@@ -9,6 +9,9 @@
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 \begin{document}
+
+\titlepage
+
 \section{Постановка задачи}
 \subsection{Одномерный случай}
 
@@ -137,6 +140,7 @@
         \item То есть можно посчитать статистику $z_j$, сравнить с критическими значениями $t_{N-p-1}$ и отвергнуть/не отвергнуть гипотезу.
         \item Доверительный интервал для $\beta$: $$(\hat\beta_j - t_{1-\alpha/2}\hat\sigma\sqrt{v_j}, \hat\beta_j - t_{1-\alpha/2}\hat\sigma\sqrt{v_j}).$$ Проверить, лежит ли в нём ноль.
     \end{itemize}
+    Проверка таких гипотез позволяет произвести отбор фичей (a.k.a. feature selection) и удалить из датасета фичи, которые не несут сигнала. При этом нужно проверить, что после их удаления качество модели не просело.
 \end{frame}
 
 \begin{frame}{Значимость группы коэффициентов}
@@ -155,10 +159,10 @@
 
 \begin{frame}{Дисперсионное разложение}
 \begin{itemize}
-    \item $\sigma^2_{reg} = ESS = \frac{1}{N}\sum_{i=1}^N (\hat y_i - \bar y)$: Explained Sum of Squares.
-    \item $\sigma^2_{data} = TSS = \frac{1}{N}\sum_{i=1}^N (y_i - \bar y)$: Total Sum of Squares.
-    \item $\sigma^2_{res} = RSS = \frac{1}{N}\sum_{i=1}^N (y_i - \bar y)$: Residual Sum of Squares (напоминание).
-    \item Тогда (\href{https://en.wikipedia.org/wiki/Explained_sum_of_squares#Simple_derivation}{см. доказательство})
+    \item $\sigma^2_{reg} = ESS = \frac{1}{N}\sum_{i=1}^N (\hat y_i - \bar y)^2$: Explained Sum of Squares.
+    \item $\sigma^2_{data} = TSS = \frac{1}{N}\sum_{i=1}^N (y_i - \bar y)^2$: Total Sum of Squares.
+    \item $\sigma^2_{res} = RSS = \frac{1}{N}\sum_{i=1}^N (y_i - \hat y_i)^2$: Residual Sum of Squares (напоминание).
+    \item Тогда (\href{https://en.wikipedia.org/wiki/Explained_sum_of_squares\#Simple_derivation}{см. доказательство})
     \begin{equation}\label{linreg_variance_decomposition}
         \sigma^2_{data} = \sigma^2_{reg} + \sigma^2_{res}.
     \end{equation}
@@ -187,6 +191,15 @@
     $$\|y-\bar \bar y\textbf{1}\|^2 = \|y-\hat y\|^2 + \|\hat y - \bar y\textbf{1}\|^2.$$
     \item Отсюда $R^2 = \frac{\|\hat y - \bar y\textbf{1}\|}{\|y-\hat y\|} = \cos^2\theta$.
 \end{itemize}
+\end{frame}
+
+\begin{frame}{Adjusted $R^2$}
+    \begin{itemize}
+        \item Недостаток $R^2$: растёт вместе с увеличением сложности модели. Поэтому некорректно сравнивать по $R^2$ модели, настроенные на разном количестве фичей.
+        \item Adjusted $R^2$ устраняет этот недостаток. Он включает штраф за дополнительно включённые признаки.
+        $$R^2_{adj} = 1 - \frac{RSS/(N-1)}{TSS/(N-p)}$$
+        \item $R^2_{adj} < 1$. Теоретически может быть меньше нуля, но только при маленьком $R^2$ и большом количестве фичей.
+    \end{itemize}
 \end{frame}
 
 \begin{frame}{Интерпретация коэффициентов}
