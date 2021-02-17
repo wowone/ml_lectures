@@ -1,0 +1,146 @@
+\documentclass[9pt]{beamer}
+\usepackage{styles/mypreamble}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\title{Алгоритмы машинного обучения}
+\subtitle{Лекция 12. Разделяющие гиперплоскости. SVM.}
+\author{Владимир Кукушкин}
+\institute{СПбГЭУ - 2020}
+\date{\today}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+\begin{document}
+
+\titlepage
+
+\section{Перцептрон Розенблатта}
+
+\begin{frame}{Идея алгоритма}
+    \begin{itemize}
+        \item Бинарная классификация. Классы $+1, -1$.
+        \item Хотим построить такую гиперплоскость, чтобы она разделяла точки этих двух классов.
+        \item Решение может не существовать. И решений может быть бесконечно много.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{2D-пример}
+\includegraphicsheight{0.5}{img/svm_separating_hyperplanes.png}
+    \begin{itemize}
+        \item Синие линии -- пара возможных вариантов провести разделяющую плоскость.
+        \item Оранжевая линия -- результат применения линейной регрессии.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Геометрическая ретроспектива}
+\begin{itemize}
+    \item Пусть $L = \{x: \beta_0 + \beta^T x = 0\}$ -- гиперплоскость в пространстве $\mathbb{R}^{p+1}$.
+    \item Вектор $\beta$ -- нормаль к плоскости, $\beta/\|\beta\|$ -- единичная нормаль.
+    \item Расстояние от точки $x_0$ до плоскости: $\frac{x_0^T\beta + \beta_0}{\|\beta\|}$.
+\end{itemize}
+    
+\end{frame}
+\begin{frame}{Формализация алгоритма}
+    \begin{itemize}
+        \item Пусть есть разделяющая шиперплоскость $L = \{x:\; f(x) = \beta_0 + \beta^T x = 0\}$.
+        \item Для всех точек пространства с одной стороны $L$ будет верно $\beta_0 + \beta^T x > 0$, для точек с другой стороны -- $\beta_0 + \beta^T x < 0$.
+        \item Итоговая модель: $a(x) = \text{sign} (\beta_0 + \beta^T x)$.
+        \item Модель допускает ошибку, когда $y_i = 1$ и $\beta_0 + \beta^T x < 0$, и наоборот (или $y_i(\beta_0 + \beta^T x) < 0$). В функционале качества можно учитывать ошибку как расстояние от точки до гиперплоскости:
+        $$L(\beta, \beta_0) = -\sum_{i\in \mathcal{M}} y_i(x_i^T\beta + \beta_0),$$
+        где $\mathcal{M}$ -- индексы точек, на которых допущена ошибка.
+    \end{itemize}
+    Модель называется перцептроном Розенблатта (1958). Позже легла в основу нейронных сетей.
+\end{frame}
+
+\begin{frame}{Настройка перцептрона}
+\begin{itemize}
+    \item $L(\beta, \beta_0)$ -- кусочно-линейная, поэтому придётся использовать приближённые методы вычисления -- стохастический градиентный спуск.
+    \item Частные производные:
+    $$\frac{\partial L}{\partial \beta} = -\sum_{i\in\mathcal{M}} y_ix_i \;\;\;\;\;\;\;\; \frac{\partial L}{\partial \beta_0} = -\sum_{i\in\mathcal{M}} y_i.$$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Сходимость алгоритма}
+\begin{itemize}
+    \item Линейно-разделимый случай -- если существует суперплоскость, идеально разделяющая классы. В этом случае возможных вариантов решения целове множество, и настройка перцептрона сходится к одной из этих плоскостей.
+    \item Как всегда в градиентном спуске результат зависит от начального положения точек.
+    \item Однако когда линейной разделимости нет, алгоритм может не сойтись никогда. Появляются циклы сходимости, которые сложно определить и разорвать.
+\end{itemize}
+\end{frame}
+
+\section{Оптимальная разделяющая гиперплоскость. SVM.}
+\subsection{Линейно-разделимый случай}
+
+\begin{frame}{Оптимальная разделяющая гиперплосткость}
+\begin{itemize}
+    \item В модели перцептрона главной было то, что даже в случае линейной разделимости правильных решений могло существовать несколько. Попробуем найти одно -- оптимальное в некотором смысле.
+    \item Чтобы увеличить обобщающую способность модели, нам нужно поместить разделяющую плоскость максимально далеко от "крайних" точек каждого из классов. В линейно-разделимом случае это всегда можно сделать.
+    \item Эту гиперплоскость можно ассоциировать с двумя параллельными гиперплоскостями: $x^T\beta+\beta_0-M=0$ и $x^T\beta+\beta_0 + M=0$, расстояние между ними будет $2M$, а отступ от центральной гиперплоскости составляет $M$ (a.k.a. margin).
+    \item Тогда задача заключается в максимизации $M$.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Иллюстрация}
+    \includegraphicsheight{0.7}{img/svm_separable_case.png}
+\end{frame}
+
+\begin{frame}{Формализация задачи}
+    \begin{itemize}
+        \item $M$ будет равно расстоянию от ближайшей точки выборки до точки:
+        $$M = \min_{x\in X}\frac{|x^T\beta + \beta_0|}{\|\beta\|} = \frac{1}{\|\beta\|}\min_{x\in X}|\beta^Tx + \beta_0|$$
+        \item Поскольку мы вольны домножать $\beta$ и $\beta_0$ на любую константу в уравнении гиперплоскости, то подберём их так, что $\min_{x\in X}|\beta^Tx + \beta_0| = 1$.
+        \item Тогда $M = 1/\|\beta\|$, и задача оптимизации принимает вид:
+        \begin{equation}
+        \begin{gathered}
+            \hat\beta, \hat\beta_0 = \underset{\beta,\beta_0}{\mathrm{arg\;min}} \|\beta\|,\\ \text{при условии } y_i(x_i^T\beta+\beta_0) \geq 1, i=1,\ldots,N.
+        \end{gathered}
+        \end{equation}
+    \end{itemize}
+\end{frame}
+
+\subsection{Неразделимый случай}
+
+\begin{frame}{Неразделимый случай}
+    \begin{itemize}
+        \item Неразделимый случай означает, что $\exists x_i: y_i(x_i^T\beta+\beta_0) < 1$.
+        \item Введём штрафы $\xi_i \geq 0$, $i=1,\ldots,N$ так, чтобы $y_i(x_i^T\beta+\beta_0) > 1 - \xi_i$.
+        \item При этом если $0 \leq y_i(x_i^T\beta+\beta_0) < 1$, то точка попадает в разделительную полосу и имеет ненулевой штраф $\xi_i > 0$, но при этом классифицируется верно.
+        \item $M = 1/\|\beta\|$ в этом случае называется мягким отступом (a.k.a. soft margin).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Иллюстрация}
+    \includegraphicsheight{0.6}{img/svm_overlap_case.png}
+    Точки со звёздочками имеют $\xi^\star_i > 0$, но $\xi^\star_1, \xi^\star_2, \xi^\star_i$
+\end{frame}
+
+\begin{frame}{SVM}
+    \begin{itemize}
+        \item С одной стороны, мы по-прежнему хотим максимизировать $M$, с другой -- минимизировать $\sum_{i=1}^N \xi_i$. Эти задачи противоречат друг другу: оптимизация по одной из них приводит к большой ошибке по другой, и наоборот.
+        \item Можно ввести параметр $C$, отвечающий за баланс между этими задачами, и решать задачу
+        \begin{equation}\label{svm_optimization}
+            \begin{gathered}
+            \hat\beta, \hat\beta_0 = \underset{\beta,\beta_0}{\mathrm{arg\;min}} \frac{1}{2}\|\beta\|^2 + C\sum_{i=1}^N\xi,\\
+            \text{при условии } \xi_i \geq 0, y_i(x_i^T\beta+\beta_0) \geq 1-\xi, i=1,\ldots,N.
+            \end{gathered}
+        \end{equation}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Решение задачи оптимизации}
+    \begin{itemize}
+        \item Минимизируем агранжиан для [\ref{svm_optimization}]:
+        $$\mathcal{L} = \frac{1}{2}\|\beta\|^2 + C\sum_{i=1}^N\xi - \sum_{i=1}^N\alpha_i[y_i(x_i^T\beta+\beta_0) - (1-\xi)] - \sum_{i=1}^N\mu_i\xi_i$$
+        по $\beta$, $\beta_0$, $\xi$.
+        \item Задача выпуклая и имеет единственное решение.
+        \item Приравнивая частные производные к нулю, получаем:
+        $$\beta = \sum_{i=1}^N\alpha y_ix_i, 0 = \sum_{i=1}^N \alpha_iy_i, \alpha_i = C - \mu_i.$$
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+    \frametitle{Литература}
+    \bibliographystyle{unsrt}
+    \nocite{esl}
+    \bibliography{references.bib}
+\end{frame}
+
+\end{document}
