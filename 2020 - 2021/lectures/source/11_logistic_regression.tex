@@ -4,7 +4,7 @@
 \title{Алгоритмы машинного обучения}
 \subtitle{Лекция 11. Линейные методы классификации}
 \author{Владимир Кукушкин}
-\institute{СПбГЭУ - 2020}
+\institute{СПбГЭУ - 10.03.2021}
 \date{\today}
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -64,18 +64,18 @@
     \item Эти вероятности можно посчитать через теорему Байеса:
     $$\text{Pr}(G=k \;|\; X = x) = \frac{\text{Pr}(X = x \;|\; G=k)\text{Pr}(G=k)}{\text{Pr}(X=x)} = \frac{f_k(x)\pi_k}{\sum_{l=1}^K f_l(x)\pi_l}.$$
     \item Будем предполагать, что фичи имеют нормальное распределение, то есть:
-    $$f_k(x) = \frac{1}{(2\pi)^{1/2}|\Sigma_k|^{1/2}} e^{-\frac{1}{2}(x-\mu_k)^T\Sigma^{-1}(x-\mu_k)}.$$
+    $$f_k(x) = \frac{1}{(2\pi)^{1/2}|\Sigma_k|^{1/2}} e^{-\frac{1}{2}(x-\mu_k)^T\Sigma_k^{-1}(x-\mu_k)}.$$
 \end{itemize}
 \end{frame}
 
 \begin{frame}{Дискриминант}
 \begin{itemize}
     \item Если $\Sigma_k = \Sigma$ для всех $k$, то
-    $$\delta_k(x) = x^T\Sigma^{-1}\mu_k -\frac{1}{2}\mu_k^T\Sigma^{-1}\mu_k + 
+    $$\delta_k(x) = \log f_k(x)\pi_k = x^T\Sigma^{-1}\mu_k -\frac{1}{2}\mu_k^T\Sigma^{-1}\mu_k + 
     \log\pi_k \text{--}$$
     линейный дискриминант (LDA -- Linear Discriminant Analysis).
     \item В общем случае дискриминант будет квадратичным (QDA -- Quadratic Discriminant Analysis):
-    $$\delta_k(x) = -\frac{1}{2}\log |\Sigma_k| -\frac{1}{2}(x-\mu_k)^T\sigma_k^{-1}(x-\mu_k) + \log\pi_k.$$
+    $$\delta_k(x) = -\frac{1}{2}\log |\Sigma_k| -\frac{1}{2}(x-\mu_k)^T\Sigma_k^{-1}(x-\mu_k) + \log\pi_k.$$
     \item В качестве оценки параметров берём следующие выражения:
     \begin{itemize}
         \item $\hat \pi_k = N_k/N$, где $N_k$ -- количество наблюдений в классе $k$,

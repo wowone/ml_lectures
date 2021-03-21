@@ -46,9 +46,9 @@ $$
     \item Модель линейной регрессии: ищем решение в виде
     $$a(x_i) = \beta_1 x_{i1} + \ldots + \beta_p {x_{ip}} + \beta_0.$$
     \item $\Theta = \{\beta_0, \beta_1, \ldots, \beta_p\} = \mathbb{R}^{p+1}$ -- множество параметров модели.
-    \item $L(x) = \frac{1}{N}\sum\limits_{i=1}^N(\hat f(x_i) - y_i)^2$ -- среднеквадратичная ошибка.
+    \item $L(x) = \frac{1}{N}\sum\limits_{i=1}^N(a(x_i) - y_i)^2$ -- среднеквадратичная ошибка.
     \item Тогда решением задачи будут параметры $\hat\beta_0, \hat\beta_1, \ldots, \hat\beta_p$, минимизирующие функционал ошибок:
-    $$\hat\theta = (\hat\beta_0, \hat\beta_1, \ldots, \hat\beta_p) = {\arg\min_{\beta_0, \beta_1,\ldots, \beta_p}}\;  \frac{1}{N}\sum\limits_{i=1}^N( (\beta_1 x_{i1}  + \ldots + \beta_p x_{ip} + \beta_0) - y_i)^2.$$
+    $$\hat\theta = (\hat\beta_0, \hat\beta_1, \ldots, \hat\beta_p) = \underset{\beta_0, \beta_1,\ldots, \beta_p}{\arg\min}\;  \frac{1}{N}\sum\limits_{i=1}^N( (\beta_1 x_{i1}  + \ldots + \beta_p x_{ip} + \beta_0) - y_i)^2.$$
 \end{itemize}
 \end{frame}
 
@@ -209,8 +209,8 @@ $$
 \begin{frame}{Взвешенная ошибка}
     \begin{itemize}
         \item Знак ошибки может иметь большое значение. Например, при прогнозировании спроса на товар лучше ошибиться в большую сторону и завезти больше товаров, чем в меньшую и упустить прибыль.
-        \item $L(a, X) = \sum\limits_{i=1}^N w_\tau(a(x_i) - y_i)$, где
-    $$w_\tau(z) = \begin{cases}\tau z & \text{при } \tau \geq 0\\ (1-\tau)|z| & \text{при } z <0\end{cases}.$$
+        \item Например, аналог для MAE мог бы быть таким: $L(a, X) = \frac{1}{N}\sum\limits_{i=1}^N w_\tau(y_i - \hat y_i)$, где
+    $$w_\tau(z) = \begin{cases}\tau z & \text{при } z \geq 0\\ (1-\tau)|z| & \text{при } z <0\end{cases}.$$
     \item То есть суммируем ошибку с весом, зависящим от знака.
     \end{itemize}
 \end{frame}
@@ -219,17 +219,17 @@ $$
 \begin{frame}{Контекст задачи}
     \begin{itemize}
         \item Пусть нужно отранжировать $N$ документов по степени их релевантности некоторому запросу.
-        \item Просим людей (асессоров) оценить эту степень релевантности. Обычно они размечают пары Запрос + документ метками типа "RELEVANT", "SOMEWHAT\_RELEVANT", "IRRELEVANT".
-        \item Итого, имеем $(a_1,\ldots, a_N)$ с оценками всех документов, по которому нужно оценить качество ранжирования.
+        \item Просим людей (асессоров) оценить эту степень релевантности. Обычно они размечают пары Запрос + документ метками типа "RELEVANT\textquotedbl, "SOMEWHAT\_RELEVANT\textquotedbl, "IRRELEVANT\textquotedbl.
+        \item Итого, имеем $(l_1,\ldots, l_N)^T$ оценок всех документов, по которым нужно оценить качество ранжирования.
         \item Поскольку на все $N$ возможных документов никто не будет смотреть, будем оценивать качество ранжирования только для первых $K$ документов.
     \end{itemize}
 \end{frame}
 
 \begin{frame}{Точность (precision)}
     \begin{itemize}
-        \item Применяется в основном для бинарной релевантности, т.е. $a_i\in \{0, 1\}$.
-        \item $\text{P@K} = \frac{1}{K}\sum_{i=1}^K a_i$: Precision @ K,
-        \item $\text{AP@K} = \frac{1}{K}\sum_{i=1}^K P@i\cdot \mathds{1}(a_i = 1)$: Average Precision @ K,
+        \item Применяется в основном для бинарной релевантности, т.е. $l_i\in \{0, 1\}$.
+        \item $\text{P@K} = \frac{1}{K}\sum_{i=1}^K l_i$: Precision @ K,
+        \item $\text{AP@K} = \frac{1}{K}\sum_{i=1}^K P@i\cdot \mathds{1}(l_i = 1)$: Average Precision @ K,
         \item $\text{MAP@K} = \frac{1}{K}\sum_{i=1}^K AP@i$: Mean Average Precision @ K.
     \end{itemize}
 \end{frame}
@@ -243,7 +243,7 @@ $$
 
 \begin{frame}{DCG}
     \begin{itemize}
-        \item $\text{DCG}_K = a_1 + \sum_{i=2}^K\frac{a_i}{\log_2(i+1)}$: Discount Cumulative Gain. Чем дальше находится релевантный документ от топа, тем больше штраф.
+        \item $\text{DCG}_K = l_1 + \sum_{i=2}^K\frac{l_i}{\log_2(i+1)}$: Discount Cumulative Gain. Чем дальше находится релевантный документ от топа, тем больше штраф.
         \item $\text{IDCG}_K$ (Ideal DCG): DCG для идеального ранжирования $K$ документов.
         \item $\text{nDCG} = \frac{\text{DCG}_K}{\text{IDCG}_K}$.
     \end{itemize}
@@ -252,9 +252,9 @@ $$
 \begin{frame}{pFound}
 \begin{itemize}
     \item Предполагаем, что пользователь просматривает документы подряд сверху вниз. $pBreak$ -- вероятность устать и прекратить поиск (не зависит от позиции и релевантности документа).
-    \item $pRel(a_i) \in [0, 1)$ -- вероятность, что пользователь найдёт ответ в документе с релевантностью $a_i$.
-    \item $pLook(a_i) = pLook(a_{i-1})(1-pRel(a_{i-1}))(1-pBreak)$ – вероятность дойти до $i$-го документа.
-    \item $pFound@K = \sum_{i=1}^K pLook(a_i) \cdot pRel(a_i)$ – вероятность найти ответ на $K$ первых документах.
+    \item $pRel(l_i) \in [0, 1)$ -- вероятность, что пользователь найдёт ответ в документе с релевантностью $l_i$.
+    \item $pLook(l_i) = pLook(l_{i-1})(1-pRel(l_{i-1}))(1-pBreak)$ – вероятность дойти до $i$-го документа.
+    \item $pFound@K = \sum_{i=1}^K pLook(l_i) \cdot pRel(l_i)$ – вероятность найти ответ на $K$ первых документах.
 \end{itemize}
 \end{frame}
 \end{document}
